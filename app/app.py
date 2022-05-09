@@ -63,7 +63,10 @@ def get_locker():
 
     free_locker = cursor.fetchone()
 
-    return json.dumps({'free_locker': free_locker[0]})
+    if free_locker is not None:
+        return json.dumps({'free_locker': free_locker[0]})
+    else:
+        return json.dumps({'free_locker': 'null'})
 
 #Update locker state and add UID and timestamp
 @app.route('/locker', methods=['PUT'])
