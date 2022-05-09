@@ -34,11 +34,20 @@ def test_table():
 def index() -> str:
     return json.dumps({'test_table': test_table()})
 
-#Get avaibility of the charging point
+#Get avaibility of the charging point, number of free locker
 @app.route('/avaibility')
 def get_avaibility():
     #check if at least one locker is available
-    return 0
+    query = ("SELECT COUNT(*) FROM locker "
+         "WHERE locker_state = 0")
+
+    connection = mysql.connector.connect(**config)
+    cursor = connection.cursor()
+    cursor.execute(query)
+
+    nb_free_locker = cursor.fetchone()
+
+    return json.dumps({'nb_free_locker': nb_free_locker[0]})
 
 #Get free locker according the connector
 @app.route('/locker')
@@ -55,12 +64,27 @@ def get_locker():
 
     return json.dumps({'free_locker': free_locker[0]})
 
-#Update locker state
-@app.route('/locker/<id>', methods=['PUT'])
+#Update locker state and add UID and timestamp
+@app.route('/locker', methods=['PUT'])
 def update_locker():
     new_state = request.args.get("new_state", type=int)
-    locker = Locker.query.get(id)
-    return json.dumps({'test_table': test_table()})
+    id_locker = request.args.get("id_locker", type=str)
+    user_uid =  request.args.get("user_uid", type=str)
+    connection = mysql.connector.connect(**config)
+    cursor = connection.cursor()
+
+    if(new_state==1 and user_uid is not None):
+        query = ("UPDATE locker SET locker_state = %s, user_uid = %s WHERE id_locker = %s")
+        cursor.execute(query, (new_state, user_uid, id_locker))
+    # elif(new_state==0):
+    #     query = ("UPDATE locker SET locker_state = %s WHERE id_locker = %s")
+    #     cursor.execute(query, (new_state, id_locker))
+
+    connection.commit()
+    result = cursor.rowcount
+
+    return json.dumps({'result': result})
+    # return new_state
 
 
 if __name__ == '__main__':
