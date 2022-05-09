@@ -74,6 +74,7 @@ def update_locker():
     new_state = request.args.get("new_state", type=int)
     id_locker = request.args.get("id_locker", type=str)
     user_uid =  request.args.get("user_uid", type=str)
+
     connection = mysql.connector.connect(**config)
     cursor = connection.cursor()
 
@@ -84,6 +85,7 @@ def update_locker():
     elif(new_state==0):
         query = ("UPDATE locker SET locker_state = %s, user_uid = NULL, deposit_time = NULL WHERE id_locker = %s")
         cursor.execute(query, (new_state, id_locker))
+        #return deposit_time?
 
     connection.commit()
     result = cursor.rowcount
@@ -91,6 +93,25 @@ def update_locker():
     return json.dumps({'result': result})
 
 #Add charge data to charge table
+@app.route('/charge', methods=['POST'])
+def add_charge():
+    charge_data = request.get_json()
+    pickup_time = datetime.now()
+    charge_data['pickup_time'] = pickup_time
+    
+    add_charge = ("INSERT INTO charge "
+               "(id_locker, user_uid, deposit_time, pickup_time) "
+               "VALUES (%(id_locker)s, %(user_uid)s, %(deposit_time)s, %(pickup_time)s)")
+
+    connection = mysql.connector.connect(**config)
+    cursor = connection.cursor()
+
+    cursor.execute(add_charge, charge_data)
+
+    connection.commit()
+    result = cursor.rowcount
+    
+    return json.dumps({'result': result})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
