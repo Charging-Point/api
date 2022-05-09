@@ -80,17 +80,28 @@ def update_locker():
 
     if(new_state==1 and user_uid is not None):
         ts = datetime.now()
-        query = ("UPDATE locker SET locker_state = %s, user_uid = %s, deposit_time = %s WHERE id_locker = %s")
-        cursor.execute(query, (new_state, user_uid, ts, id_locker))
+        update_to_busy = ("UPDATE locker SET locker_state = %s, user_uid = %s, deposit_time = %s WHERE id_locker = %s")
+        cursor.execute(update_to_busy, (new_state, user_uid, ts, id_locker))
     elif(new_state==0):
-        query = ("UPDATE locker SET locker_state = %s, user_uid = NULL, deposit_time = NULL WHERE id_locker = %s")
-        cursor.execute(query, (new_state, id_locker))
-        #return deposit_time?
+        #Retrieve deposit_time
+        get_deposit_time = ("SELECT deposit_time FROM locker "
+         "WHERE id_locker = %s LIMIT 1")
+        cursor.execute(get_deposit_time, (id_locker,))
+        
+        retrieved_deposit_time = cursor.fetchone()
 
+        #Update locker state to free
+        update_to_free = ("UPDATE locker SET locker_state = %s, user_uid = NULL, deposit_time = NULL WHERE id_locker = %s")
+        cursor.execute(update_to_free, (new_state, id_locker))
+        
     connection.commit()
     result = cursor.rowcount
 
-    return json.dumps({'result': result})
+    if(new_state==1 and user_uid is not None):
+        return json.dumps({'result': result}) 
+    elif(new_state==0):
+        return json.dumps({'result': result, 'deposit_time': retrieved_deposit_time[0]}, default=str) 
+
 
 #Add charge data to charge table
 @app.route('/charge', methods=['POST'])
