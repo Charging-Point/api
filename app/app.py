@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 import mysql.connector
 import json
 import os
+from datetime import datetime
 
 app = Flask(__name__)
 config = {
@@ -74,18 +75,19 @@ def update_locker():
     cursor = connection.cursor()
 
     if(new_state==1 and user_uid is not None):
-        query = ("UPDATE locker SET locker_state = %s, user_uid = %s WHERE id_locker = %s")
-        cursor.execute(query, (new_state, user_uid, id_locker))
-    # elif(new_state==0):
-    #     query = ("UPDATE locker SET locker_state = %s WHERE id_locker = %s")
-    #     cursor.execute(query, (new_state, id_locker))
+        ts = datetime.now()
+        query = ("UPDATE locker SET locker_state = %s, user_uid = %s, deposit_time = %s WHERE id_locker = %s")
+        cursor.execute(query, (new_state, user_uid, ts, id_locker))
+    elif(new_state==0):
+        query = ("UPDATE locker SET locker_state = %s, user_uid = NULL, deposit_time = NULL WHERE id_locker = %s")
+        cursor.execute(query, (new_state, id_locker))
 
     connection.commit()
     result = cursor.rowcount
 
     return json.dumps({'result': result})
-    # return new_state
 
+#Add charge data to charge table
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
