@@ -27,4 +27,10 @@ INSERT INTO locker
   (id_locker, locker_state, connector)
 VALUES
   ('A1', 0, 'usb-c'),
-  ('A2', 0, 'iphone');
+  ('A2', 0, 'iphone'),
+  ('A3', 0, 'usb-c'),
+  ('A4', 0, 'iphone'),
+  ('A5', 0, 'usb-c'),
+  ('A6', 0, 'iphone')
+  ('A7', 0, 'usb-c'),
+  ('A8', 0, 'iphone');
