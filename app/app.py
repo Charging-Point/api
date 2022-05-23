@@ -124,5 +124,23 @@ def add_charge():
     
     return json.dumps({'result': result})
 
+#Get locker id where the device of the given user if a device is in the charging point
+@app.route('/device')
+def get_device():
+    user_uid =  request.args.get("user_uid", type=str)
+
+    query = ("SELECT id_locker FROM locker "
+         "WHERE user_uid = %s LIMIT 1")
+    connection = mysql.connector.connect(**config)
+    cursor = connection.cursor()
+    cursor.execute(query, (user_uid,))
+
+    id_locker = cursor.fetchone()
+
+    if id_locker is not None:
+        return json.dumps({'id_locker': id_locker[0]})
+    else:
+        return json.dumps({'id_locker': 'null'})
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
