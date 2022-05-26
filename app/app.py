@@ -7,7 +7,7 @@ from datetime import datetime
 app = Flask(__name__)
 config = {
         'user': 'root',
-        'password': 'root',
+        'password': os.environ.get("MYSQL_PASSWORD"),
         'host': 'db',
         'port': '3306',
         'database': 'charging_point'
@@ -15,7 +15,7 @@ config = {
 def test_table():
     config = {
         'user': 'root',
-        'password': 'root',
+        'password': os.environ.get("MYSQL_PASSWORD"),
         'host': 'db',
         'port': '3306',
         'database': 'charging_point'
