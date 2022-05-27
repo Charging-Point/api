@@ -2,9 +2,15 @@ from flask import Flask, jsonify, request
 import mysql.connector
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+from flask_jwt_extended import create_access_token,get_jwt,get_jwt_identity, unset_jwt_cookies, jwt_required, JWTManager
 
 app = Flask(__name__)
+
+app.config["JWT_SECRET_KEY"] = "please-remember-to-change-me"
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1000)
+jwt = JWTManager(app)
+
 config = {
         'user': 'root',
         'password': os.environ.get("MYSQL_PASSWORD"),
@@ -30,6 +36,33 @@ def test_table():
 
     return resp
 
+@app.after_request
+def refresh_expiring_jwts(response):
+    try:
+        exp_timestamp = get_jwt()["exp"]
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
+        if target_timestamp > exp_timestamp:
+            access_token = create_access_token(identity=get_jwt_identity())
+            data = response.get_json()
+            if type(data) is dict:
+                data["access_token"] = access_token 
+                response.data = json.dumps(data)
+        return response
+    except (RuntimeError, KeyError):
+        # Case where there is not a valid JWT. Just return the original respone
+        return response
+
+@app.route('/token', methods=["POST"])
+def create_token():
+    user = request.json.get("user", None)
+    password = request.json.get("password", None)
+    if user != "app" or password != "test":
+        return {"msg": "Wrong user or password"}, 401
+
+    access_token = create_access_token(identity=user)
+    response = {"access_token":access_token}
+    return response
 
 @app.route('/')
 def index() -> str:
@@ -37,6 +70,7 @@ def index() -> str:
 
 #Get avaibility of the charging point, number of free locker
 @app.route('/avaibility')
+@jwt_required()
 def get_avaibility():
     #check if at least one locker is available
     query = ("SELECT COUNT(*) FROM locker "
@@ -68,7 +102,7 @@ def get_locker():
     else:
         return json.dumps({'free_locker': 'null'})
 
-#Update locker state and add UID and timestamp
+#Update locker state
 @app.route('/locker', methods=['PUT'])
 def update_locker():
     new_state = request.args.get("new_state", type=int)
@@ -93,6 +127,10 @@ def update_locker():
         #Update locker state to free
         update_to_free = ("UPDATE locker SET locker_state = %s, user_uid = NULL, deposit_time = NULL WHERE id_locker = %s")
         cursor.execute(update_to_free, (new_state, id_locker))
+    elif(new_state==2):
+        #Update locker state to free
+        update_to_out_of_service = ("UPDATE locker SET locker_state = %s WHERE id_locker = %s")
+        cursor.execute(update_to_out_of_service, (new_state, id_locker))
         
     connection.commit()
     result = cursor.rowcount
@@ -101,6 +139,8 @@ def update_locker():
         return json.dumps({'result': result}) 
     elif(new_state==0):
         return json.dumps({'result': result, 'deposit_time': retrieved_deposit_time[0]}, default=str) 
+    elif(new_state==2):
+        return json.dumps({'result': result}) 
 
 
 #Add charge data to charge table
