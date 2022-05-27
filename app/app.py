@@ -41,7 +41,7 @@ def refresh_expiring_jwts(response):
     try:
         exp_timestamp = get_jwt()["exp"]
         now = datetime.now(timezone.utc)
-        target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
+        target_timestamp = datetime.timestamp(now + timedelta(hours=500))
         if target_timestamp > exp_timestamp:
             access_token = create_access_token(identity=get_jwt_identity())
             data = response.get_json()
@@ -65,6 +65,7 @@ def create_token():
     return response
 
 @app.route('/')
+@jwt_required()
 def index() -> str:
     return json.dumps({'test_table': test_table()})
 
@@ -86,6 +87,7 @@ def get_avaibility():
 
 #Get free locker according the connector
 @app.route('/locker')
+@jwt_required()
 def get_locker():
     conn = request.args.get("connector", type=str)
 
@@ -104,6 +106,7 @@ def get_locker():
 
 #Update locker state
 @app.route('/locker', methods=['PUT'])
+@jwt_required()
 def update_locker():
     new_state = request.args.get("new_state", type=int)
     id_locker = request.args.get("id_locker", type=str)
@@ -145,6 +148,7 @@ def update_locker():
 
 #Add charge data to charge table
 @app.route('/charge', methods=['POST'])
+@jwt_required()
 def add_charge():
     charge_data = request.get_json()
     pickup_time = datetime.now()
@@ -166,6 +170,7 @@ def add_charge():
 
 #Get locker id where the device of the given user if a device is in the charging point
 @app.route('/device')
+@jwt_required()
 def get_device():
     user_uid =  request.args.get("user_uid", type=str)
 
