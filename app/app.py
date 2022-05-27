@@ -93,6 +93,10 @@ def update_locker():
         #Update locker state to free
         update_to_free = ("UPDATE locker SET locker_state = %s, user_uid = NULL, deposit_time = NULL WHERE id_locker = %s")
         cursor.execute(update_to_free, (new_state, id_locker))
+    elif(new_state==2):
+        #Update locker state to free
+        update_to_out_of_service = ("UPDATE locker SET locker_state = %s WHERE id_locker = %s")
+        cursor.execute(update_to_out_of_service, (new_state, id_locker))
         
     connection.commit()
     result = cursor.rowcount
@@ -101,6 +105,8 @@ def update_locker():
         return json.dumps({'result': result}) 
     elif(new_state==0):
         return json.dumps({'result': result, 'deposit_time': retrieved_deposit_time[0]}, default=str) 
+    elif(new_state==2):
+        return json.dumps({'result': result}) 
 
 
 #Add charge data to charge table
