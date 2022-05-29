@@ -187,5 +187,26 @@ def get_device():
     else:
         return json.dumps({'id_locker': 'null'})
 
+#Get list of out-of-service lockers
+@app.route('/outofservice')
+def get_out_of_service_lockers():
+
+    query = ("SELECT id_locker FROM locker "
+         "WHERE locker_state = 2")
+    connection = mysql.connector.connect(**config)
+    cursor = connection.cursor()
+    cursor.execute(query)
+
+    response = cursor.fetchall()
+
+    list_id_locker = list()
+    for i, item in enumerate(response):
+        list_id_locker.append(item[0])
+        
+    if list_id_locker is not None:
+        return json.dumps({'out_of_service_lockers': list_id_locker})
+    else:
+        return json.dumps({'out_of_service_lockers': 'null'})
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
