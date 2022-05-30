@@ -74,7 +74,7 @@ def index() -> str:
 def get_avaibility():
     #check if at least one locker is available
     query = ("SELECT COUNT(*) FROM locker "
-         "WHERE locker_state = 0")
+         "WHERE locker_state = 0 AND connector != 'parking'")
 
     connection = mysql.connector.connect(**config)
     cursor = connection.cursor()
