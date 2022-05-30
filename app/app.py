@@ -188,7 +188,7 @@ def get_device():
         return json.dumps({'id_locker': 'null'})
 
 #Get list of out-of-service lockers
-@app.route('/outofservice')
+@app.route('/out-of-service')
 def get_out_of_service_lockers():
 
     query = ("SELECT id_locker FROM locker "
@@ -207,6 +207,26 @@ def get_out_of_service_lockers():
         return json.dumps({'out_of_service_lockers': list_id_locker})
     else:
         return json.dumps({'out_of_service_lockers': 'null'})
+
+#Get the id of a free parking, if exists
+@app.route('/parking')
+# @jwt_required()
+def get_free_parking():
+    #check if at least one locker is available
+    query = ("SELECT id_locker FROM locker "
+         "WHERE locker_state = 0 AND connector = 'parking'")
+
+    connection = mysql.connector.connect(**config)
+    cursor = connection.cursor()
+    cursor.execute(query)
+
+    free_parking = cursor.fetchone()
+
+    if free_parking is not None:
+        return json.dumps({'free_parking': free_parking[0]})
+    else:
+        return json.dumps({'free_parking': 'null'})
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
