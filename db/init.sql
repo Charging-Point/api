@@ -73,4 +73,13 @@ VALUES
   ('F5', 0, 'micro-usb'),
   ('F6', 0, 'micro-usb'),
   ('F7', 0, 'micro-usb'),
-  ('F8', 0, 'micro-usb');
+  ('F8', 0, 'micro-usb'),
+  ('P1', 0, 'parking'),
+  ('P2', 0, 'parking'),
+  ('P3', 0, 'parking'),
+  ('P4', 0, 'parking'),
+  ('P5', 0, 'parking'),
+  ('P6', 0, 'parking'),
+  ('P7', 0, 'parking'),
+  ('P8', 0, 'parking');
+
