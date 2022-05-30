@@ -57,7 +57,7 @@ def refresh_expiring_jwts(response):
 def create_token():
     user = request.json.get("user", None)
     password = request.json.get("password", None)
-    if user != "app" or password != "test":
+    if user != "app" or password != os.environ.get("JWT_PASSWORD"):
         return {"msg": "Wrong user or password"}, 401
 
     access_token = create_access_token(identity=user)
@@ -65,13 +65,13 @@ def create_token():
     return response
 
 @app.route('/')
-# @jwt_required()
+@jwt_required()
 def index() -> str:
     return json.dumps({'test_table': test_table()})
 
 #Get avaibility of the charging point, number of free locker
 @app.route('/avaibility')
-# @jwt_required()
+@jwt_required()
 def get_avaibility():
     #check if at least one locker is available
     query = ("SELECT COUNT(*) FROM locker "
@@ -87,7 +87,7 @@ def get_avaibility():
 
 #Get free locker according the connector
 @app.route('/locker')
-# @jwt_required()
+@jwt_required()
 def get_locker():
     conn = request.args.get("connector", type=str)
 
@@ -106,7 +106,7 @@ def get_locker():
 
 #Update locker state
 @app.route('/locker', methods=['PUT'])
-# @jwt_required()
+@jwt_required()
 def update_locker():
     new_state = request.args.get("new_state", type=int)
     id_locker = request.args.get("id_locker", type=str)
@@ -148,7 +148,7 @@ def update_locker():
 
 #Add charge data to charge table
 @app.route('/charge', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def add_charge():
     charge_data = request.get_json()
     pickup_time = datetime.now()
@@ -170,7 +170,7 @@ def add_charge():
 
 #Get locker id where the device of the given user if a device is in the charging point
 @app.route('/device')
-# @jwt_required()
+@jwt_required()
 def get_device():
     user_uid =  request.args.get("user_uid", type=str)
 
@@ -189,6 +189,7 @@ def get_device():
 
 #Get list of out-of-service lockers
 @app.route('/out-of-service')
+@jwt_required()
 def get_out_of_service_lockers():
 
     query = ("SELECT id_locker FROM locker "
@@ -210,7 +211,7 @@ def get_out_of_service_lockers():
 
 #Get the id of a free parking, if exists
 @app.route('/parking')
-# @jwt_required()
+@jwt_required()
 def get_free_parking():
     #check if at least one locker is available
     query = ("SELECT id_locker FROM locker "
@@ -229,7 +230,7 @@ def get_free_parking():
 
 #Get the id of a free parking, if exists
 @app.route('/long-standing-device')
-# @jwt_required()
+@jwt_required()
 def get_locker_with_long_standing_device():
     #check if at least one locker is available
     query = ("SELECT id_locker, user_uid FROM locker "
