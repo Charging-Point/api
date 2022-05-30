@@ -75,7 +75,7 @@ def index() -> str:
 def get_avaibility():
     #check if at least one locker is available
     query = ("SELECT COUNT(*) FROM locker "
-         "WHERE locker_state = 0")
+         "WHERE locker_state = 0 AND connector != 'parking'")
 
     connection = mysql.connector.connect(**config)
     cursor = connection.cursor()
@@ -234,7 +234,7 @@ def get_free_parking():
 def get_locker_with_long_standing_device():
     #check if at least one locker is available
     query = ("SELECT id_locker, user_uid FROM locker "
-         "WHERE locker_state = 0 AND connector != 'parking' AND TIMESTAMPDIFF(MINUTE,deposit_time,NOW()) > 119")
+         "WHERE locker_state = 1 AND connector != 'parking' AND TIMESTAMPDIFF(MINUTE,deposit_time,NOW()) > 119")
 
     connection = mysql.connector.connect(**config)
     cursor = connection.cursor()
@@ -243,7 +243,7 @@ def get_locker_with_long_standing_device():
     id_locker_long_standing = cursor.fetchone()
 
     if id_locker_long_standing is not None:
-        return json.dumps({'id_locker_long_standing': id_locker_long_standing[0]})
+        return json.dumps({'id_locker_long_standing': id_locker_long_standing[0], 'user_uid_long_standing': id_locker_long_standing[1]})
     else:
         return json.dumps({'id_locker_long_standing': 'null'})
 
