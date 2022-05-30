@@ -227,6 +227,24 @@ def get_free_parking():
     else:
         return json.dumps({'free_parking': 'null'})
 
+#Get the id of a free parking, if exists
+@app.route('/device-long-standing')
+# @jwt_required()
+def get_free_parking():
+    #check if at least one locker is available
+    query = ("SELECT id_locker, user_uid FROM locker "
+         "WHERE locker_state = 0 AND connector != 'parking' AND TIMESTAMPDIFF(MINUTE,deposit_time,NOW()) > 119")
+
+    connection = mysql.connector.connect(**config)
+    cursor = connection.cursor()
+    cursor.execute(query)
+
+    id_locker_long_standing = cursor.fetchone()
+
+    if id_locker_long_standing is not None:
+        return json.dumps({'id_locker_long_standing': id_locker_long_standing[0]})
+    else:
+        return json.dumps({'id_locker_long_standing': 'null'})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
