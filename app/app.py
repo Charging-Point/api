@@ -228,7 +228,7 @@ def get_free_parking():
 def get_locker_with_long_standing_device():
     #check if at least one locker is available
     query = ("SELECT id_locker, user_uid FROM locker "
-         "WHERE locker_state = 1 AND connector != 'parking' AND TIMESTAMPDIFF(MINUTE,deposit_time,NOW()) > 1")
+         "WHERE locker_state = 1 AND connector != 'parking' AND TIMESTAMPDIFF(MINUTE,deposit_time,NOW()) > 119")
 
     connection = mysql.connector.connect(**config)
     cursor = connection.cursor()
