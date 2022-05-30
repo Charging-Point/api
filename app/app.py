@@ -223,9 +223,9 @@ def get_free_parking():
         return json.dumps({'free_parking': 'null'})
 
 #Get the id of a free parking, if exists
-@app.route('/device-long-standing')
+@app.route('/long-standing-device')
 # @jwt_required()
-def get_free_parking():
+def get_locker_with_long_standing_device():
     #check if at least one locker is available
     query = ("SELECT id_locker, user_uid FROM locker "
          "WHERE locker_state = 0 AND connector != 'parking' AND TIMESTAMPDIFF(MINUTE,deposit_time,NOW()) > 119")
